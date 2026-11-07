@@ -1,0 +1,402 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Birthday Surprise</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap">
+<style>
+/* Layout: one full-screen stage; each step is a screen that fades in over the last. Single dark navy look with warm gold and coral, by choice. */
+:root {
+  --bg: #04141c;
+  --panel: #0a2230;
+  --ink: #fff6e6;
+  --muted: #9fc3c9;
+  --accent: #ffb627;
+  --accent-soft: #ffd77a;
+  --glow: rgba(255, 182, 39, .55);
+  --gold: #3ddc97;
+  --font-display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  overflow: hidden;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+#stage { position: relative; height: 100%; max-width: 480px; margin: 0 auto; }
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 24px; text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity .7s ease;
+  overflow-y: auto; overflow-x: hidden; padding-block: 20px;
+}
+.screen.on { opacity: 1; pointer-events: auto; }
+h1, h2 { font-family: var(--font-display); font-weight: 700; margin: 0; text-wrap: balance; }
+.neon { color: var(--accent); text-shadow: 0 0 12px var(--glow), 0 0 32px var(--glow); }
+
+button { font: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.cta {
+  font-family: var(--font-display); font-weight: 600; font-size: 1.15rem;
+  color: #2a1200; border: 0; border-radius: 999px; padding: 14px 34px;
+  background: linear-gradient(135deg, #ff6b5a, #ffb627);
+  box-shadow: 0 0 24px var(--glow);
+  transition: transform .15s ease;
+}
+.cta:active { transform: scale(.96); }
+
+/* Welcome */
+#welcome h1 { font-size: clamp(2.6rem, 14vw, 4rem); }
+#welcome .name { font-family: var(--font-display); color: var(--muted); font-size: 1.1rem; letter-spacing: .08em; text-transform: uppercase; }
+
+/* Keypad */
+.pad {
+  width: min(100%, 340px); padding: 22px 20px 16px; border-radius: 28px;
+  background: var(--panel); border: 2px solid var(--accent);
+  box-shadow: 0 0 30px var(--glow), inset 0 0 30px rgba(255, 182, 39, .15);
+}
+.pad h2 { font-size: 1.3rem; margin-bottom: 14px; }
+.display {
+  height: 54px; border-radius: 14px; border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  font-size: 2rem; color: var(--accent-soft); letter-spacing: .2em; margin-bottom: 18px;
+}
+.dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent); }
+.dot.fill { background: var(--accent); box-shadow: 0 0 10px var(--glow); }
+.keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; justify-items: center; }
+.key {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: transparent; color: var(--accent-soft); font-family: var(--font-display); font-size: 1.4rem; font-weight: 600;
+  border: 2px solid var(--accent); box-shadow: 0 0 12px rgba(255, 182, 39, .4);
+  transition: background .12s, transform .12s;
+}
+.key:active { background: var(--accent); color: #fff; transform: scale(.92); }
+.hint { margin-top: 14px; font-size: .78rem; color: var(--muted); min-height: 1.2em; }
+.shake { animation: shake .4s; }
+@keyframes shake { 20%, 60% { transform: translateX(-9px); } 40%, 80% { transform: translateX(9px); } }
+
+/* Loading */
+.loader { width: min(80%, 300px); }
+.loader p { font-family: var(--font-display); font-size: 1.15rem; color: var(--accent-soft); margin: 0 0 12px; }
+.bar { height: 8px; border-radius: 99px; background: #12384a; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--accent); box-shadow: 0 0 12px var(--glow); }
+
+/* Memories */
+#memories { justify-content: flex-start; gap: 18px; padding-top: max(24px, env(safe-area-inset-top, 0px)); }
+#memories h2 { font-size: 2.2rem; color: var(--gold); }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+.photo {
+  aspect-ratio: 3 / 4; border-radius: 18px; overflow: hidden; position: relative;
+  border: 2px solid var(--accent); box-shadow: 0 0 18px var(--glow);
+  background: #0e2c3b;
+  opacity: 0; transform: translateY(24px) scale(.96);
+  transition: opacity .7s ease, transform .7s ease;
+}
+.photo.in { opacity: 1; transform: none; }
+.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo .ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: .95rem; color: rgba(255,255,255,.85); padding: 12px; }
+.next-wrap { padding-bottom: max(24px, env(safe-area-inset-bottom, 0px)); }
+
+/* Countdown */
+#count .num { font-family: var(--font-display); font-size: 9rem; font-weight: 700; line-height: 1; color: var(--accent); text-shadow: 0 0 30px var(--glow), 0 0 70px var(--glow); }
+.pop { animation: pop .9s ease both; }
+@keyframes pop { 0% { opacity: 0; transform: scale(.4); } 40% { opacity: 1; transform: scale(1.1); } 100% { opacity: .9; transform: scale(1); } }
+
+/* Message card */
+#message { justify-content: center; }
+.card {
+  width: min(100%, 360px); height: min(72%, 560px); border-radius: 28px; padding: 26px 22px;
+  background: var(--panel); border: 2px solid var(--accent);
+  box-shadow: 0 0 34px var(--glow), inset 0 0 36px rgba(255, 182, 39, .15);
+  display: flex; flex-direction: column; gap: 14px; text-align: center; overflow: hidden;
+}
+.card h2 { font-size: 2.1rem; flex: none; }
+.msg {
+  flex: 1; overflow-y: auto; font-size: 1.05rem; line-height: 1.75; color: var(--ink);
+  white-space: pre-wrap; scrollbar-width: none;
+}
+.msg::-webkit-scrollbar { display: none; }
+.caret::after { content: "|"; color: var(--accent); animation: blink .8s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+#toTime { opacity: 0; transition: opacity .6s; }
+#toTime.show { opacity: 1; }
+
+/* Time spent */
+#thanks { gap: 14px; }
+#thanks h2 { font-size: clamp(1.8rem, 9vw, 2.4rem); }
+.stats { font-size: 1.1rem; line-height: 1.8; color: var(--ink); margin: 6px 0 26px; }
+.stats b { color: var(--gold); font-variant-numeric: tabular-nums; }
+#thanks .big { font-size: clamp(2.2rem, 11vw, 3rem); }
+
+#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+@media (prefers-reduced-motion: reduce) {
+  .screen, .photo { transition: none; }
+  .pop, .shake { animation: none; }
+}
+</style>
+
+<div id="stage">
+  <section class="screen on" id="welcome">
+    <div class="name" id="nameTag"></div>
+    <h1 class="neon">Welcome ✨</h1>
+    <button class="cta" id="start">Click Here</button>
+  </section>
+
+  <section class="screen" id="lock">
+    <div class="pad" id="pad">
+      <h2 class="neon">🔒 Secret Code</h2>
+      <div class="display" id="disp"></div>
+      <div class="keys" id="keys"></div>
+      <div class="hint" id="hint">Dial the code to proceed to the next interface</div>
+    </div>
+  </section>
+
+  <section class="screen" id="load1">
+    <div class="loader"><p>Loading Memories…</p><div class="bar"><i id="bar1"></i></div></div>
+  </section>
+
+  <section class="screen" id="memories">
+    <h2>Memories 📸</h2>
+    <div class="grid" id="grid"></div>
+    <div class="next-wrap"><button class="cta" id="toCount">Continue 🎉</button></div>
+  </section>
+
+  <section class="screen" id="count">
+    <div class="num" id="num"></div>
+  </section>
+
+  <section class="screen" id="load2">
+    <div class="loader"><p>Message Loading…</p><div class="bar"><i id="bar2"></i></div></div>
+  </section>
+
+  <section class="screen" id="message">
+    <div class="card">
+      <h2 class="neon" id="hbd"></h2>
+      <div class="msg caret" id="msg"></div>
+    </div>
+    <button class="cta" id="toTime">Next 🎁</button>
+  </section>
+
+  <section class="screen" id="thanks">
+    <h2 class="neon">Time Spent With You</h2>
+    <div class="stats">
+      <div>You opened this web at <b id="openedAt"></b> ⏰</div>
+      <div>You spent <b id="spent"></b> here 🌟</div>
+      <div id="thanksLine"></div>
+    </div>
+    <h2 class="neon big">Thanks For Watching 😊</h2>
+    <button class="cta" id="restart">Click the button for restart</button>
+  </section>
+</div>
+<canvas id="fx"></canvas>
+
+<script>
+/* ======== EDIT THESE ======== */
+const CONFIG = {
+  name: "Adaobi",                 // her name, shown on the welcome screen and the card
+  code: "1234",                   // 4-digit secret code she must enter
+  codeHint: "Hint: the day we both love",
+  heading: "Happy Birthday!",
+  message:
+    "Wishing you the happiest birthday ever 🎂✨\n" +
+    "May your day be filled with endless smiles, love, and cake 🍰🎈\n" +
+    "You deserve all the joy this world has to offer, today and always 🌟\n" +
+    "Keep shining brighter than the stars and chasing your dreams 🌙\n" +
+    "Here's to another year of amazing memories, laughter, and adventures 🚀\n" +
+    "May success follow you everywhere and all your wishes come true 🙌🎁\n" +
+    "Stay blessed, stay awesome, and keep making everyone around you happy 😊🌸\n" +
+    "Happy birthday to the best sister ever 🎉",
+  thanksLine: "Thanks for giving me your precious time",
+  // Photo URLs or data: URIs. Leave an entry as "" to show a pink placeholder tile.
+  photos: ["", "", "", "", "", ""],
+  captions: ["Us", "Good times", "Always laughing", "Family", "Favorite day", "More to come"]
+};
+/* ============================ */
+
+const $ = (id) => document.getElementById(id);
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+let openedAt = null, startedAt = null, spentTimer = null, runId = 0;
+
+function show(id) {
+  document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("on", s.id === id));
+  const el = $(id); if (el) el.scrollTop = 0;
+}
+async function fillBar(barId, ms) {
+  const b = $(barId); b.style.transition = "none"; b.style.width = "0";
+  await wait(50); b.style.transition = `width ${ms}ms ease`; b.style.width = "100%";
+  await wait(ms + 250);
+}
+
+/* ---- welcome ---- */
+$("nameTag").textContent = CONFIG.name ? "For " + CONFIG.name : "";
+$("start").onclick = () => {
+  startedAt = Date.now();
+  openedAt = new Date();
+  resetLock();
+  show("lock");
+};
+
+/* ---- keypad ---- */
+let entered = "";
+const keyLabels = ["1","2","3","4","5","6","7","8","9","C","0","✓"];
+keyLabels.forEach((k) => {
+  const b = document.createElement("button");
+  b.className = "key"; b.textContent = k; b.type = "button";
+  b.setAttribute("aria-label", k === "C" ? "Clear" : k === "✓" ? "Enter" : "Digit " + k);
+  b.onclick = () => press(k);
+  $("keys").appendChild(b);
+});
+function drawDisplay() {
+  const d = $("disp"); d.innerHTML = "";
+  const n = Math.max(CONFIG.code.length, 4);
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement("span");
+    s.className = "dot" + (i < entered.length ? " fill" : "");
+    d.appendChild(s);
+  }
+}
+function resetLock() {
+  entered = ""; drawDisplay();
+  $("hint").textContent = CONFIG.codeHint || "Dial the code to proceed to the next interface";
+}
+function press(k) {
+  if (k === "C") { entered = ""; }
+  else if (k === "✓") { return submitCode(); }
+  else if (entered.length < CONFIG.code.length) { entered += k; }
+  drawDisplay();
+  if (entered.length === CONFIG.code.length && k !== "C") submitCode();
+}
+async function submitCode() {
+  if (entered === CONFIG.code) {
+    $("hint").textContent = "Unlocked 🎉";
+    await wait(500);
+    runMemories();
+  } else {
+    $("hint").textContent = "Wrong code, try again";
+    const p = $("pad"); p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake");
+    entered = ""; drawDisplay();
+  }
+}
+
+/* ---- memories ---- */
+const PALETTE = [["#ffb627","#7a3b00"],["#ff6b5a","#5a1a2a"],["#3ddc97","#0b4a45"],["#4bc0ff","#12335e"],["#ff9f43","#6b2a10"],["#c18cff","#2e1a5e"]];
+function buildGrid() {
+  const g = $("grid"); g.innerHTML = "";
+  CONFIG.photos.forEach((src, i) => {
+    const d = document.createElement("div"); d.className = "photo";
+    if (src) {
+      const im = new Image(); im.src = src; im.alt = CONFIG.captions[i] || "Memory " + (i + 1);
+      d.appendChild(im);
+    } else {
+      const [a, b] = PALETTE[i % PALETTE.length];
+      d.style.background = `linear-gradient(160deg, ${a}, ${b})`;
+      const p = document.createElement("div"); p.className = "ph"; p.textContent = CONFIG.captions[i] || "Memory " + (i + 1);
+      d.appendChild(p);
+    }
+    g.appendChild(d);
+  });
+}
+async function runMemories() {
+  const my = ++runId;
+  show("load1");
+  await fillBar("bar1", 2200);
+  if (my !== runId) return;
+  buildGrid(); show("memories");
+  const cards = [...document.querySelectorAll(".photo")];
+  for (const c of cards) { await wait(350); if (my !== runId) return; c.classList.add("in"); }
+}
+$("toCount").onclick = async () => {
+  const my = ++runId;
+  show("count");
+  for (const n of [3, 2, 1]) {
+    const el = $("num"); el.textContent = n;
+    el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+    await wait(1000); if (my !== runId) return;
+  }
+  show("load2");
+  await fillBar("bar2", 2000); if (my !== runId) return;
+  runMessage(my);
+};
+
+/* ---- message ---- */
+async function runMessage(my) {
+  $("hbd").textContent = CONFIG.heading + " 🎂";
+  const m = $("msg"); m.textContent = ""; m.classList.add("caret");
+  $("toTime").classList.remove("show");
+  show("message");
+  startFx();
+  await wait(600);
+  for (const ch of Array.from(CONFIG.message)) {
+    if (my !== runId) return;
+    m.textContent += ch;
+    m.scrollTop = m.scrollHeight;
+    await wait(ch === "\n" ? 260 : 38);
+  }
+  m.classList.remove("caret");
+  $("toTime").classList.add("show");
+}
+$("toTime").onclick = () => {
+  stopFx();
+  $("openedAt").textContent = openedAt.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" });
+  $("thanksLine").textContent = CONFIG.thanksLine;
+  const tick = () => {
+    const s = Math.floor((Date.now() - startedAt) / 1000);
+    const m = Math.floor(s / 60);
+    $("spent").textContent = `${m} minute${m === 1 ? "" : "s"} and ${s % 60} second${s % 60 === 1 ? "" : "s"}`;
+  };
+  tick(); clearInterval(spentTimer); spentTimer = setInterval(tick, 1000);
+  show("thanks");
+};
+$("restart").onclick = () => {
+  runId++; clearInterval(spentTimer);
+  $("start").parentElement.scrollTop = 0;
+  show("welcome");
+};
+
+/* ---- hearts + confetti ---- */
+const cv = $("fx"), cx = cv.getContext("2d");
+let parts = [], fxOn = false, raf = 0;
+function size() { cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; }
+addEventListener("resize", size); size();
+const COLORS = ["#ffb627", "#ff6b5a", "#3ddc97", "#4bc0ff", "#fff6e6", "#c18cff"];
+function spawn() {
+  const heart = Math.random() < .3; // star
+  parts.push({
+    x: Math.random() * cv.width, y: -20 * devicePixelRatio,
+    vx: (Math.random() - .5) * 1.2 * devicePixelRatio, vy: (1 + Math.random() * 2.2) * devicePixelRatio,
+    s: (heart ? 9 + Math.random() * 10 : 4 + Math.random() * 5) * devicePixelRatio,
+    r: Math.random() * 6, vr: (Math.random() - .5) * .2,
+    c: heart ? "#ffb627" : COLORS[(Math.random() * COLORS.length) | 0], heart
+  });
+}
+function drawHeart(p) {
+  const s = p.s; cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+  cx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? s * .45 : s;
+    cx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+  }
+  cx.closePath(); cx.fill(); cx.restore();
+}
+function frame() {
+  cx.clearRect(0, 0, cv.width, cv.height);
+  if (fxOn && Math.random() < .5) spawn();
+  parts = parts.filter((p) => p.y < cv.height + 30);
+  for (const p of parts) {
+    p.x += p.vx; p.y += p.vy; p.r += p.vr;
+    if (p.heart) drawHeart(p);
+    else { cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c; cx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); cx.restore(); }
+  }
+  if (fxOn || parts.length) raf = requestAnimationFrame(frame);
+}
+function startFx() { if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; fxOn = true; cancelAnimationFrame(raf); frame(); }
+function stopFx() { fxOn = false; }
+</script>
+
+</body></html>
